@@ -22,6 +22,12 @@ return {
 				"poker hands if higher versions are banned.",
 				"(Affects Pair, Two Pair, Three of a Kind, Four of a Kind)",
 				"(Does not affect 'always scores' effects)"
+			},
+
+			c_bannermod_hide_collection = "Hide Banned Cards From Collection",
+			c_bannermod_hide_collection_desc = {
+				"Hides banned cards from the collection, and",
+				"prevents them from being counted for completion",
 			}
 		}
 	}

@@ -105,6 +105,18 @@ mod.base.config_tab = function()
 					ref_table = mod.config,
 					ref_value = 'limit_poker_hand_scoring',
 					callback = function() SMODS.save_mod_config(mod.base) end
+				}),
+				create_toggle({
+					label = localize("c_bannermod_hide_collection"),
+					info = localize("c_bannermod_hide_collection_desc"),
+					ref_table = mod.config,
+					ref_value = 'hide_collection',
+					callback = function()
+						SMODS.save_mod_config(mod.base)
+						set_discover_tallies()
+						set_profile_progress()
+						-- G:save_progress()
+					end
 				})
 			}},
 		}},

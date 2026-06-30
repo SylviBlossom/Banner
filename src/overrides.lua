@@ -128,3 +128,19 @@ function create_UIBox_current_hand_row(handname, simple, in_collection, ...)
 
 	return result
 end
+
+local orig_SMODS_collection_pool = SMODS.collection_pool
+function SMODS.collection_pool(_base_pool)
+	local pool = orig_SMODS_collection_pool(_base_pool)
+	if mod.config.hide_collection then
+		local i = 1
+		while pool[i] do
+			if mod.config.disabled_keys[pool[i].key] then
+				table.remove(pool, i)
+			else
+				i = i + 1
+			end
+		end
+	end
+	return pool
+end

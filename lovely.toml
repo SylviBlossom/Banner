@@ -158,3 +158,43 @@ target = 'functions/UI_definitions.lua'
 pattern = "text = (?<default>localize\\('k_level_prefix'\\).+), scale"
 position = 'at'
 payload = 'ref_table = BANNERMOD.create_poker_hand_ref_table(handname, $default), ref_value = "text", scale'
+
+# Remove banned cards from discoveries
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = "if not v.omit and (not v.no_collection or (type(v.no_collection) == 'function' and not v:no_collection())) then"
+position = 'after'
+match_indent = true
+payload = '''
+if not (BANNERMOD.config.hide_collection and BANNERMOD.config.disabled_keys[v.key]) then
+'''
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = 'G.DISCOVER_TALLIES.editions.tally = G.DISCOVER_TALLIES.editions.tally+1'
+position = 'after'
+match_indent = true
+payload = '''
+end
+'''
+
+# And remove them from profile progress
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = "if v.set == 'Joker' and (not v.no_collection or (type(v.no_collection) == 'function' and not v:no_collection())) and not v.omit then "
+position = 'after'
+match_indent = true
+payload = '''
+if not (BANNERMOD.config.hide_collection and BANNERMOD.config.disabled_keys[v.key]) then
+'''
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = 'G.PROGRESS.joker_stickers.tally = G.PROGRESS.joker_stickers.tally + get_joker_win_sticker(v, true)'
+position = 'after'
+match_indent = true
+payload = '''
+end
+'''
