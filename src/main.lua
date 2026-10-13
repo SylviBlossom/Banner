@@ -17,6 +17,8 @@ SMODS.Atlas({
 
 local mod = BANNERMOD
 
+mod.DOUBLE_TAP_TIME = 0.4
+
 mod.locked_keys = {
 	["c_base"] = true,
 	["soul"] = true,
@@ -104,6 +106,15 @@ mod.base.config_tab = function()
 					info = localize("c_bannermod_limit_poker_hand_scoring_desc"),
 					ref_table = mod.config,
 					ref_value = 'limit_poker_hand_scoring',
+					callback = function() SMODS.save_mod_config(mod.base) end
+				})
+			}},
+			{n = G.UIT.R, config = {align = "cm", r = 0.1, padding = 0.2}, nodes = {
+				create_toggle({
+					label = localize("c_bannermod_controller_double_press"),
+					info = localize("c_bannermod_controller_double_press_desc"),
+					ref_table = mod.config,
+					ref_value = 'controller_double_press',
 					callback = function() SMODS.save_mod_config(mod.base) end
 				})
 			}},

@@ -139,31 +139,35 @@ function mod.handle_collection_click_poker_hand(hover_target)
 	return true
 end
 
-function mod.handle_collection_right_click()
+function mod.handle_collection_toggle(target)
 	if G.CONTROLLER.locks.frame or not G.OVERLAY_MENU or G.OVERLAY_MENU.REMOVED then
 		return false
 	end
 
-	local hover_target = G.CONTROLLER.cursor_hover.target
+	target = target or G.CONTROLLER.cursor_hover.target
 
 	if mod.view_type == "hands" then
-		if not hover_target or not hover_target.config then
+		if not target or not target.config then
 			return false
 		end
-		return mod.handle_collection_click_poker_hand(hover_target)
+		return mod.handle_collection_click_poker_hand(target)
 
 	elseif mod.view_type == "tags" then
-		if not hover_target or not hover_target:is(Sprite) then
+		if not target or not target:is(Sprite) then
 			return false
 		end
-		return mod.handle_collection_click_tag(hover_target)
+		return mod.handle_collection_click_tag(target)
 
 	elseif G.your_collection then
-		if not hover_target or not hover_target:is(Card) then
+		if not target or not target:is(Card) then
 			return false
 		end
-		return mod.handle_collection_click_card(hover_target)
+		return mod.handle_collection_click_card(target)
 	end
+end
+
+function mod.handle_collection_right_click()
+	return mod.handle_collection_toggle()
 end
 
 function mod.debuff_collection_page()
@@ -218,6 +222,21 @@ function mod.update_poker_hand_ref_text(handname)
 	else
 		ref_table.text = ref_table.default
 	end
+end
+
+function mod.get_directions_key()
+	if G.CONTROLLER.HID.touch then
+		return mod.config.left_click and 'k_bannermod_directions_touch_left' or 'k_bannermod_directions_touch'
+	elseif G.CONTROLLER.HID.controller then
+		if mod.config.left_click then
+			return 'k_bannermod_directions_controller_left'
+		elseif mod.config.controller_double_press then
+			return 'k_bannermod_directions_controller'
+		end
+		return 'k_bannermod_directions_controller_y'
+	end
+
+	return mod.config.left_click and 'k_bannermod_directions_left' or 'k_bannermod_directions_right'
 end
 
 function mod.collection_toggle_all(enable)
@@ -368,9 +387,7 @@ function mod.build_collection_sidebar()
 
 		mod.view_sidebar_tally = {text = count..' / '..total}
 
-		local directions_key = mod.config.left_click and
-			'k_bannermod_directions_left' or
-			'k_bannermod_directions_right'
+		local directions_key = mod.get_directions_key()
 
 		return {
 			simple_text_container('k_bannermod_name', {colour = G.C.UI.TEXT_LIGHT, scale = 0.4}),

@@ -22,6 +22,84 @@ function Controller:queue_R_cursor_press(x, y, ...)
 	orig_Controller_queue_R_cursor_press(self, x, y, ...)
 end
 
+-- Quick double tap on touch toggles bans
+local orig_Controller_L_cursor_press = Controller.L_cursor_press
+function Controller:L_cursor_press(x, y, ...)
+	orig_Controller_L_cursor_press(self, x, y, ...)
+
+	if self.HID.touch then
+		mod.touch_press_uptime = G.TIMERS.UPTIME
+	end
+end
+
+local orig_Controller_L_cursor_release = Controller.L_cursor_release
+function Controller:L_cursor_release(x, y, ...)
+	orig_Controller_L_cursor_release(self, x, y, ...)
+
+	local press_uptime = mod.touch_press_uptime
+	mod.touch_press_uptime = nil
+
+	if not self.HID.touch or mod.config.left_click then
+		mod.last_tap = nil
+		return
+	end
+
+	if self.cursor_up.handled then
+		mod.last_tap = nil
+		return
+	end
+
+	local target = self.cursor_hover.target
+
+	local quick_tap = target and target ~= G.ROOM
+		and Vector_Dist(self.cursor_down.T, self.cursor_up.T) < G.MIN_CLICK_DIST
+		and G.TIMERS.UPTIME - (press_uptime or G.TIMERS.UPTIME) < mod.DOUBLE_TAP_TIME
+
+	if not quick_tap then
+		mod.last_tap = nil
+		return
+	end
+
+	local time = G.TIMERS.UPTIME
+
+	if mod.last_tap and mod.last_tap.target == target and time - mod.last_tap.time <= mod.DOUBLE_TAP_TIME then
+		mod.last_tap = nil
+		mod.handle_collection_toggle(target)
+	else
+		mod.last_tap = {target = target, time = time}
+	end
+end
+
+-- Controller: double-press A to toggle bans, Y to toggle a focused item
+local orig_Controller_button_press_update = Controller.button_press_update
+function Controller:button_press_update(button, dt)
+	if self.HID.controller then
+		local target = self.focused.target or self.cursor_hover.target
+
+		if button == 'y' then
+			if mod.handle_collection_toggle(target) then
+				mod.last_controller_press = nil
+				return
+			end
+		elseif button == 'a' and not mod.config.left_click and mod.config.controller_double_press then
+			local time = G.TIMERS.UPTIME
+
+			if mod.last_controller_press
+				and mod.last_controller_press.target == target
+				and time - mod.last_controller_press.time <= mod.DOUBLE_TAP_TIME then
+				mod.last_controller_press = nil
+				if mod.handle_collection_toggle(target) then
+					return
+				end
+			else
+				mod.last_controller_press = {target = target, time = time}
+			end
+		end
+	end
+
+	orig_Controller_button_press_update(self, button, dt)
+end
+
 local orig_INIT_COLLECTION_CARD_ALERTS = INIT_COLLECTION_CARD_ALERTS
 function INIT_COLLECTION_CARD_ALERTS(...)
 	orig_INIT_COLLECTION_CARD_ALERTS(...)
